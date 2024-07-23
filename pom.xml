@@ -7,7 +7,7 @@
     <version>1.0.1</version>
   </parent>
   <artifactId>nb-maven-runner</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>nbm</packaging>
   <name>Netbeans Module Maven Runner</name>
   <description>A Netbeans Plugin to show Maven projects with action, lifecycle and plugins-goals</description>
