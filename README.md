@@ -69,6 +69,7 @@ which shows the documentation of the plugin goal in the *Output* panel.
 
 ## 1.1.0
 - 'Real' project icons
+- Update external libs
 
 ## 1.0.0
 
