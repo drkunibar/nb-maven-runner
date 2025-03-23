@@ -67,6 +67,9 @@ which shows the documentation of the plugin goal in the *Output* panel.
 
 # Changelog
 
+## 1.1.0
+- 'Real' project icons
+
 ## 1.0.0
 
 - First Version
