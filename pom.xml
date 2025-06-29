@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.4.5-jre</version>
+      <version>33.4.8-jre</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -114,7 +114,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.36</version>
+      <version>1.18.38</version>
       <scope>provided</scope>
     </dependency>
     <!-- Logging -->
