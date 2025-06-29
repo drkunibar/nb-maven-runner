@@ -1,7 +1,7 @@
 package io.github.netbeans.mvnrunner;
 
+import java.util.Objects;
 import java.util.Properties;
-import java.util.function.Consumer;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -9,20 +9,23 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableModel;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
@@ -34,15 +37,16 @@ import io.github.netbeans.mvnrunner.node.ProjectNode;
 import io.github.netbeans.mvnrunner.node.ProjectRootChildren;
 import io.github.netbeans.mvnrunner.util.ActionUtils;
 import io.github.netbeans.mvnrunner.util.NodeUtils;
+import io.github.netbeans.mvnrunner.util.PropertiesWrapper;
 
 /**
  * The Maven-Runner {@link TopComponent}.
  */
 // @formatter:off
-@ConvertAsProperties(dtd = "-//io.github.netbeans.mvnrunner//MavenRunnerTopComponent//EN")
+@ConvertAsProperties(dtd = "-//io.github.netbeans.mvnrunner//MavenRunnerTopComponent//EN", autostore = false)
 @TopComponent.Description(preferredID = "MavenRunnerTopComponent",
         iconBase = "io/github/netbeans/mvnrunner/resources/Maven2IconRun1.png",
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED)
 @TopComponent.Registration(mode = "properties",
         openAtStartup = true)
 @ActionID(category = "Window",
@@ -59,6 +63,11 @@ import io.github.netbeans.mvnrunner.util.NodeUtils;
 public final class MavenRunnerTopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private static final long serialVersionUID = 1L;
+
+    private JButton runBtn;
+    private JButton debugBtn;
+    private JButton buildBtn;
+    private JButton rebuildBtn;
 
     public MavenRunnerTopComponent() {
         initComponents();
@@ -92,7 +101,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
     // End of variables declaration//GEN-END:variables
     private OutlineView treeView;
     private transient Node rootNode;
-    private transient Properties properties = new Properties();
+    private final transient PropertiesWrapper properties = new PropertiesWrapper(new Properties());
     private final transient ExplorerManager explorerManager = new ExplorerManager();
 
     @Override
@@ -148,60 +157,45 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
                 explorerManager.setRootContext(n);
             });
         });
-        JButton runBtn = new JButton(ImageUtilities.loadImageIcon(RUN_ICON, true));
+        runBtn = new JButton(ImageUtilities.loadImageIcon(RUN_ICON, true));
         runBtn.setToolTipText("Run Project");
         runBtn.setEnabled(false);
 
-        JButton debugBtn = new JButton(ImageUtilities.loadImageIcon(DEBUG_ICON, true));
+        debugBtn = new JButton(ImageUtilities.loadImageIcon(DEBUG_ICON, true));
         debugBtn.setToolTipText("Debug Project");
         debugBtn.setEnabled(false);
 
-        JButton buildBtn = new JButton(ImageUtilities.loadImageIcon(BUILD_ICON, true));
+        buildBtn = new JButton(ImageUtilities.loadImageIcon(BUILD_ICON, true));
         buildBtn.setToolTipText("Build Project");
         buildBtn.setEnabled(false); // build
 
-        JButton rebuildBtn = new JButton(ImageUtilities.loadImageIcon(REBUILD_ICON, true));
+        rebuildBtn = new JButton(ImageUtilities.loadImageIcon(REBUILD_ICON, true));
         rebuildBtn.setToolTipText("Clean and Build Project");
         rebuildBtn.setEnabled(false); // build
 
-        outline.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-            int row = outline.getSelectedRow();
-            ETable.RowMapping mapping = new ETable.RowMapping(row, outline.getModel(), outline);
-            Node node = (Node) mapping.getTransformedValue(0);
-            while (node != null) {
-                if ((node instanceof ProjectNode)) {
-                    ProjectNode pn = (ProjectNode) node;
+        outline.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> updateBtnState());
+        TreePathSupport tps = outline.getOutlineModel().getTreePathSupport();
+        tps.addTreeExpansionListener(new TreeExpansionListener() {
 
-                    runBtn.setEnabled(true);
-                    Action action = ActionUtils.createProjectRunAction(pn);
-                    runBtn.setAction(action);
-                    runBtn.setToolTipText("Run Project (" + pn.getDisplayName() + ")");
-
-                    debugBtn.setEnabled(true);
-                    Action debugAction = ActionUtils.createProjectDebugAction(pn);
-                    debugBtn.setAction(debugAction);
-                    debugBtn.setToolTipText("Debug Project (" + pn.getDisplayName() + ")");
-
-                    buildBtn.setEnabled(true);
-                    Action buildAction = ActionUtils.createProjectBuildAction(pn);
-                    buildBtn.setAction(buildAction);
-                    buildBtn.setToolTipText("Build Project (" + pn.getDisplayName() + ")");
-
-                    rebuildBtn.setEnabled(true);
-                    Action rebuildAction = ActionUtils.createProjectRebuildAction(pn);
-                    rebuildBtn.setAction(rebuildAction);
-                    rebuildBtn.setToolTipText("Clean and Build Project (" + pn.getDisplayName() + ")");
-                    break;
-
+            @Override
+            public void treeExpanded(TreeExpansionEvent event) {
+                TreePath path = event.getPath();
+                Object lastPathComponent = path.getLastPathComponent();
+                if (lastPathComponent instanceof Node node) {
+                    properties.put("expand:" + NodeUtils.getTreePath(node), treeView.isExpanded(node));
                 }
-                node = node.getParentNode();
             }
-            if (node == null) {
-                runBtn.setAction(null);
-                runBtn.setEnabled(false);
+
+            @Override
+            public void treeCollapsed(TreeExpansionEvent event) {
+                TreePath path = event.getPath();
+                Object lastPathComponent = path.getLastPathComponent();
+                if (lastPathComponent instanceof Node node) {
+                    properties.put("expand:" + NodeUtils.getTreePath(node), treeView.isExpanded(node));
+                }
             }
-            runBtn.updateUI();
         });
+
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
         toolbar.add(refreshBtn);
         toolbar.add(runBtn);
@@ -221,6 +215,46 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
         return n;
     }
 
+    private void updateBtnState() {
+        Outline outline = treeView.getOutline();
+        int row = outline.getSelectedRow();
+        ETable.RowMapping mapping = new ETable.RowMapping(row, outline.getModel(), outline);
+        Node node = (Node) mapping.getTransformedValue(0);
+        while (node != null) {
+            if ((node instanceof ProjectNode)) {
+                ProjectNode pn = (ProjectNode) node;
+
+                runBtn.setEnabled(true);
+                Action action = ActionUtils.createProjectRunAction(pn);
+                runBtn.setAction(action);
+                runBtn.setToolTipText("Run Project (" + pn.getDisplayName() + ")");
+
+                debugBtn.setEnabled(true);
+                Action debugAction = ActionUtils.createProjectDebugAction(pn);
+                debugBtn.setAction(debugAction);
+                debugBtn.setToolTipText("Debug Project (" + pn.getDisplayName() + ")");
+
+                buildBtn.setEnabled(true);
+                Action buildAction = ActionUtils.createProjectBuildAction(pn);
+                buildBtn.setAction(buildAction);
+                buildBtn.setToolTipText("Build Project (" + pn.getDisplayName() + ")");
+
+                rebuildBtn.setEnabled(true);
+                Action rebuildAction = ActionUtils.createProjectRebuildAction(pn);
+                rebuildBtn.setAction(rebuildAction);
+                rebuildBtn.setToolTipText("Clean and Build Project (" + pn.getDisplayName() + ")");
+                break;
+
+            }
+            node = node.getParentNode();
+        }
+        if (node == null) {
+            runBtn.setAction(null);
+            runBtn.setEnabled(false);
+        }
+        runBtn.updateUI();
+    }
+
     private void handleTableModelChanges(TableModelEvent event) {
         Outline outline = treeView.getOutline();
         if (event.getFirstRow() == TableModelEvent.HEADER_ROW && event.getLastRow() == TableModelEvent.HEADER_ROW) {
@@ -237,14 +271,9 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
             if (node == null) {
                 continue;
             }
-            String property = properties.getProperty("expand:" + getTreePathHash(node), "false");
-            if (Boolean.parseBoolean(property)) {
-                invokeInAwtThreadLater(() -> {
-                    treeView.expandNode(node);
-                });
+            if (properties.getBoolean("expand:" + NodeUtils.getTreePath(node), false)) {
+                invokeInAwtThreadLater(() -> treeView.expandNode(node));
             }
-            // We need it only once
-            properties.remove("expand:" + getTreePathHash(node));
         }
     }
 
@@ -268,33 +297,28 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
     @SneakyThrows
     @SuppressWarnings("unused")
     void writeProperties(java.util.Properties p) {
-        p.setProperty("version", "1.0");
+        p.putAll(properties.unwrap());
+        p.put("version", "2.0");
         NodeUtils.walkTree(rootNode, node -> {
             if (node == null) {
                 return;
             }
             invokeInAwtThreadAndWait(() -> {
-                p.setProperty("expand:" + getTreePathHash(node), Boolean.toString(treeView.isExpanded(node)));
+                p.put("expand:" + NodeUtils.getTreePath(node), Boolean.toString(treeView.isExpanded(node)));
             });
         });
     }
 
-    private String getTreePathHash(Node node) {
-        StringBuilder result = new StringBuilder(8192);
-        do {
-            result.append(node.getName());
-            result.append(" / ");
-        } while ((node = node.getParentNode()) != null);
-        return result.toString();
-    }
-
     @SuppressWarnings("unused")
     void readProperties(java.util.Properties p) {
-        properties = p;
-        String version = p.getProperty("version");
+        String pVersion = p.getProperty("version");
+        String propVersion = properties.getString("version", "2.0");
+        if (!Objects.equals(pVersion, propVersion)) {
+            properties.clear();
+        }
+        properties.putAll(p);
         NodeUtils.walkTree(rootNode, node -> {
-            String property = p.getProperty("expand:" + getTreePathHash(node), "false");
-            if (Boolean.parseBoolean(property)) {
+            if (properties.getBoolean("expand:" + NodeUtils.getTreePath(node), false)) {
                 treeView.expandNode(node);
             }
         });

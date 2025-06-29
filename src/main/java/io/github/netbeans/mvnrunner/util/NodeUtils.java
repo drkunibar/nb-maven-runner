@@ -1,9 +1,11 @@
 package io.github.netbeans.mvnrunner.util;
 
 import java.util.function.Consumer;
-import lombok.experimental.UtilityClass;
+
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class NodeUtils {
@@ -22,4 +24,12 @@ public class NodeUtils {
         }
     }
 
+    public String getTreePath(Node node) {
+        StringBuilder result = new StringBuilder(8192);
+        do {
+            result.append(node.getName());
+            result.append(" / ");
+        } while ((node = node.getParentNode()) != null);
+        return result.toString();
+    }
 }
