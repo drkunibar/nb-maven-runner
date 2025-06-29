@@ -24,9 +24,13 @@ import io.github.netbeans.mvnrunner.node.ProjectNode;
 @UtilityClass
 // @formatter:off
 @Messages({
+    "# {0} - Project name",
     "ACT_"+ActionProvider.COMMAND_RUN+"=Run Project ({0})",
+    "# {0} - Project name",
     "ACT_"+ActionProvider.COMMAND_DEBUG+"=Debug Project ({0})",
+    "# {0} - Project name",
     "ACT_"+ActionProvider.COMMAND_BUILD+"=Build Project ({0})",
+    "# {0} - Project name",
     "ACT_"+ActionProvider.COMMAND_REBUILD+"=Rebuild Project ({0})",
     "ACT_"+ActionProvider.COMMAND_RUN+"Simple=Run Project",
     "ACT_"+ActionProvider.COMMAND_DEBUG+"Simple=Debug Project",
