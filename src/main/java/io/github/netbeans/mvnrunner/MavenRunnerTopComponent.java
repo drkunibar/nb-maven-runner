@@ -33,6 +33,7 @@ import lombok.SneakyThrows;
 import io.github.netbeans.mvnrunner.node.ProjectNode;
 import io.github.netbeans.mvnrunner.node.ProjectRootChildren;
 import io.github.netbeans.mvnrunner.util.ActionUtils;
+import io.github.netbeans.mvnrunner.util.NodeUtils;
 
 /**
  * The Maven-Runner {@link TopComponent}.
@@ -129,14 +130,14 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
         expandAllBtn.setToolTipText(Bundle.LB_ExpandAll());
         expandAllBtn.addActionListener(ev -> {
             SwingUtilities.invokeLater(() -> {
-                walkTree(rootNode, treeView::expandNode);
+                NodeUtils.walkTree(rootNode, treeView::expandNode);
             });
         });
         JButton collapseAllBtn = new JButton(ImageUtilities.loadImageIcon(COLLAPSE_ALL_ICON, true));
         collapseAllBtn.setToolTipText(Bundle.LB_CollapseAll());
         collapseAllBtn.addActionListener(ev -> {
             invokeInAwtThreadLater(() -> {
-                walkTree(rootNode.getChildren(), treeView::collapseNode);
+                NodeUtils.walkTree(rootNode.getChildren(), treeView::collapseNode);
             });
         });
         JButton refreshBtn = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
@@ -220,20 +221,6 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
         return n;
     }
 
-    private void walkTree(Node node, Consumer<Node> consumer) {
-        consumer.accept(node);
-        Children children = node.getChildren();
-        for (Node child : children.getNodes()) {
-            walkTree(child, consumer);
-        }
-    }
-
-    private void walkTree(Children nodes, Consumer<Node> consumer) {
-        for (Node node : nodes.getNodes()) {
-            walkTree(node, consumer);
-        }
-    }
-
     private void handleTableModelChanges(TableModelEvent event) {
         Outline outline = treeView.getOutline();
         if (event.getFirstRow() == TableModelEvent.HEADER_ROW && event.getLastRow() == TableModelEvent.HEADER_ROW) {
@@ -282,7 +269,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
     @SuppressWarnings("unused")
     void writeProperties(java.util.Properties p) {
         p.setProperty("version", "1.0");
-        walkTree(rootNode, node -> {
+        NodeUtils.walkTree(rootNode, node -> {
             if (node == null) {
                 return;
             }
@@ -305,7 +292,7 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
     void readProperties(java.util.Properties p) {
         properties = p;
         String version = p.getProperty("version");
-        walkTree(rootNode, node -> {
+        NodeUtils.walkTree(rootNode, node -> {
             String property = p.getProperty("expand:" + getTreePathHash(node), "false");
             if (Boolean.parseBoolean(property)) {
                 treeView.expandNode(node);
