@@ -20,9 +20,7 @@ public class ProjectRootChildren extends Children.Keys<Object> {
 
     private static final String OPEN_PROJECTS_PROP = "openProjects"; // NOI18N
 
-    public ProjectRootChildren() {
-        this(false);
-    }
+    private FavoriteListNode favoriteListNode;
 
     public ProjectRootChildren(boolean lazy) {
         super(lazy);
@@ -34,8 +32,8 @@ public class ProjectRootChildren extends Children.Keys<Object> {
     protected Node[] createNodes(Object key) {
         if (key instanceof NbMavenProjectWrapper projectWrapper) {
             return new Node[] { new ProjectNode(projectWrapper) };
-        } else if (key instanceof FavoriteListNode favoriteListNode) {
-            return new Node[] { favoriteListNode };
+        } else if (key instanceof FavoriteListNode favListNode) {
+            return new Node[] { favListNode };
         } else {
             return new Node[0];
         }
@@ -45,7 +43,12 @@ public class ProjectRootChildren extends Children.Keys<Object> {
     protected void addNotify() {
         super.addNotify();
         Collection keys = new ArrayList<>();
-        keys.add(new FavoriteListNode());
+        if (favoriteListNode == null) {
+            this.favoriteListNode = new FavoriteListNode(this.getNode());
+        } else {
+            favoriteListNode.addNotify();
+        }
+        keys.add(favoriteListNode);
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (Project p : openProjects) {
             if (p != null && NbMavenProjectImplWrapper.isNbMavenProjectImpl(p)) {

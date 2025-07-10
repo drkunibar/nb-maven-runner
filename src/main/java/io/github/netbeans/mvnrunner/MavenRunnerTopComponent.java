@@ -1,5 +1,6 @@
 package io.github.netbeans.mvnrunner;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Properties;
 import javax.swing.Action;
@@ -28,11 +29,14 @@ import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 import lombok.SneakyThrows;
 
+import io.github.netbeans.mvnrunner.favorite.FavoriteDescriptor;
+import io.github.netbeans.mvnrunner.favorite.FavoriteService;
 import io.github.netbeans.mvnrunner.node.ProjectNode;
 import io.github.netbeans.mvnrunner.node.ProjectRootChildren;
 import io.github.netbeans.mvnrunner.util.ActionUtils;
@@ -275,6 +279,10 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
                 invokeInAwtThreadLater(() -> treeView.expandNode(node));
             }
         }
+        FavoriteService service = Lookup.getDefault().lookup(FavoriteService.class);
+        if (service != null) {
+            service.fireChangeEvent();
+        }
     }
 
     @SneakyThrows
@@ -307,6 +315,12 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
                 p.put("expand:" + NodeUtils.getTreePath(node), Boolean.toString(treeView.isExpanded(node)));
             });
         });
+        FavoriteService service = Lookup.getDefault().lookup(FavoriteService.class);
+        if (service != null) {
+            Collection<FavoriteDescriptor> favorites = service.getFavorites();
+            favorites.forEach(f -> p.put("favorite_" + f.getIdentifier(), FavoriteDescriptor.serialize(f)));
+            favorites.forEach(f -> properties.put("favorite_" + f.getIdentifier(), FavoriteDescriptor.serialize(f)));
+        }
     }
 
     @SuppressWarnings("unused")
@@ -322,5 +336,15 @@ public final class MavenRunnerTopComponent extends TopComponent implements Explo
                 treeView.expandNode(node);
             }
         });
+        FavoriteService service = Lookup.getDefault().lookup(FavoriteService.class);
+        if (service != null) {
+            for (String key : properties.getKeys()) {
+                if (key.startsWith("favorite_")) {
+                    String value = properties.getString(key, "");
+                    FavoriteDescriptor descriptor = FavoriteDescriptor.deserialize(value);
+                    service.addFavorite(descriptor);
+                }
+            }
+        }
     }
 }

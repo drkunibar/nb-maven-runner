@@ -17,6 +17,8 @@ import org.openide.util.lookup.Lookups;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
+import io.github.netbeans.mvnrunner.action.AddFavoriteAction;
+import io.github.netbeans.mvnrunner.favorite.FavoriteDescriptor;
 import io.github.netbeans.mvnrunner.model.NetbeansActionMappingWrapper;
 import io.github.netbeans.mvnrunner.model.ProjectActionWrapper;
 import io.github.netbeans.mvnrunner.node.ActionChildren.MavenAction;
@@ -29,6 +31,7 @@ public class ActionChildren extends Children.Keys<Object> {
     private final Project project;
 
     public ActionChildren(@Nonnull Project project) {
+        super(false);
         this.project = project;
     }
 
@@ -37,7 +40,7 @@ public class ActionChildren extends Children.Keys<Object> {
         if (key instanceof MavenAction action) {
             NetbeansActionMappingWrapper actionMapping = action.getActionMapping();
             return new Node[] { new ActionNode(project, actionMapping, action.isGlobal()) };
-        } else if (key instanceof ProjectActionWrapper projectAction) {
+        } else if (key instanceof ProjectActionWrapper projectAction) { // Default Action like 'Run', 'Debug' etc.
             return new Node[] { new SimpleActionNode(projectAction.unwrap()) };
         } else {
             throw new IllegalArgumentException("Unknow key type: " + key);
@@ -88,7 +91,7 @@ public class ActionChildren extends Children.Keys<Object> {
         boolean global;
     }
 
-    public class SimpleActionNode extends AbstractNode {
+    public class SimpleActionNode extends AbstractNode implements FavoriteableNode {
 
         private final AbstractAction action;
 
@@ -104,12 +107,32 @@ public class ActionChildren extends Children.Keys<Object> {
 
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[0];
+            Action addFavoriteAction = new AddFavoriteAction(this);
+            return new Action[] { addFavoriteAction };
+
         }
 
         @Override
         public Action getPreferredAction() {
             return action;
         }
+
+        @Override
+        public String getNodeIdentifier() {
+            return new StringBuilder().append("SimpleActionNode_")
+                    .append(project.getProjectDirectory().getPath())
+                    .append("_")
+                    .append(action.getValue(Action.NAME))
+                    .toString();
+        }
+
+        @Override
+        public FavoriteNode getFavoriteNode(String name, String imageUri, String description) {
+            FavoriteDescriptor favoriteDescriptor
+                    = new FavoriteDescriptor(getNodeIdentifier(), name, imageUri, description);
+            FavoriteNode result = new FavoriteNode(this, favoriteDescriptor);
+            return result;
+        }
+
     }
 }

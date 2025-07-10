@@ -22,6 +22,8 @@ import org.openide.util.NbBundle.Messages;
 
 import lombok.SneakyThrows;
 
+import io.github.netbeans.mvnrunner.action.AddFavoriteAction;
+import io.github.netbeans.mvnrunner.favorite.FavoriteDescriptor;
 import io.github.netbeans.mvnrunner.model.ArtifactWrapper;
 import io.github.netbeans.mvnrunner.model.MavenConfigurationWrapper;
 import io.github.netbeans.mvnrunner.model.Mojo;
@@ -42,7 +44,7 @@ import io.github.netbeans.mvnrunner.util.MavenProjectUtils;
     "TT_goal=<html><b>Plugin:</b> {0}<br/>\n<b>Goal:</b> {1}:{2}<br/>\n<b>Lifecycle:</b> {3}</htlm>"
 })
 // @formatter:on
-public class GoalNode extends AbstractNode {
+public class GoalNode extends AbstractNode implements FavoriteableNode {
 
     private static final @StaticResource String PLUGIN_ICON = "io/github/netbeans/mvnrunner/resources/mojo.png"; // NOI18N
     private static final @StaticResource String LIFECYCLE_ICON
@@ -88,7 +90,9 @@ public class GoalNode extends AbstractNode {
                 Lookup.EMPTY, getProject());
         runHelpDescAction.putValue(Action.NAME, ACT_Execute_help());
 
-        return new Action[] { new RunGoalAction(mojo, getProject()), runGoalWithModsAction, null, runHelpDescAction };
+        Action addFavoriteAction = new AddFavoriteAction(this);
+        return new Action[] { new RunGoalAction(mojo, getProject()), runGoalWithModsAction, null, runHelpDescAction,
+                null, addFavoriteAction };
     }
 
     @Override
@@ -139,4 +143,20 @@ public class GoalNode extends AbstractNode {
         return project.getNbMavenProjectImpl();
     }
 
+    @Override
+    public String getNodeIdentifier() {
+        return new StringBuilder().append("GoalNode_")
+                .append(project.getNbMavenProjectImpl().getProjectDirectory().getPath())
+                .append("_")
+                .append(getName())
+                .toString();
+    }
+
+    @Override
+    public FavoriteNode getFavoriteNode(String name, String imageUri, String description) {
+        FavoriteDescriptor favoriteDescriptor
+                = new FavoriteDescriptor(getNodeIdentifier(), name, imageUri, description);
+        FavoriteNode result = new FavoriteNode(this, favoriteDescriptor);
+        return result;
+    }
 }

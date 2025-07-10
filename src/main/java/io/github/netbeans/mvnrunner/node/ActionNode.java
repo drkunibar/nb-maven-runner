@@ -14,6 +14,8 @@ import org.openide.util.NbBundle.Messages;
 
 import lombok.extern.slf4j.Slf4j;
 
+import io.github.netbeans.mvnrunner.action.AddFavoriteAction;
+import io.github.netbeans.mvnrunner.favorite.FavoriteDescriptor;
 import io.github.netbeans.mvnrunner.model.NetbeansActionMappingWrapper;
 import io.github.netbeans.mvnrunner.util.MavenProjectUtils;
 
@@ -24,7 +26,7 @@ import io.github.netbeans.mvnrunner.util.MavenProjectUtils;
 })
 // @formatter:on
 @Slf4j
-public class ActionNode extends AbstractNode {
+public class ActionNode extends AbstractNode implements FavoriteableNode {
 
     private static final String ACTION_ICON = "io/github/netbeans/mvnrunner/resources/Maven2IconRun1.png"; // NOI18N
     private static final String GLOBAL_ACTION_ICON = "io/github/netbeans/mvnrunner/resources/Maven2IconRun3.png"; // NOI18N
@@ -35,6 +37,7 @@ public class ActionNode extends AbstractNode {
         super(Children.LEAF);
         this.project = project;
         this.actionMapping = actionMapping;
+        this.setName(actionMapping.getActionName());
         setName(actionMapping.getDisplayName());
         setDisplayName(actionMapping.getDisplayName());
         setIconBaseWithExtension(global ? GLOBAL_ACTION_ICON : ACTION_ICON);
@@ -47,11 +50,29 @@ public class ActionNode extends AbstractNode {
                 = MavenProjectUtils.createCustomMavenAction(ACT_Execute(), actionMapping, false, Lookup.EMPTY, project);
         Action runGoalWithModsAction = MavenProjectUtils.createCustomMavenAction(ACT_Execute_mod(), actionMapping, true,
                 Lookup.EMPTY, project);
-        return new Action[] { runGoalAction, runGoalWithModsAction };
+        Action addFavoriteAction = new AddFavoriteAction(this);
+        return new Action[] { runGoalAction, runGoalWithModsAction, null, addFavoriteAction };
     }
 
     @Override
     public Action getPreferredAction() {
         return MavenProjectUtils.createCustomMavenAction(ACT_Execute(), actionMapping, false, Lookup.EMPTY, project);
+    }
+
+    @Override
+    public String getNodeIdentifier() {
+        return new StringBuilder().append("ActionNode_")
+                .append(project.getProjectDirectory().getPath())
+                .append("_")
+                .append(getName())
+                .toString();
+    }
+
+    @Override
+    public FavoriteNode getFavoriteNode(String name, String imageUri, String description) {
+        FavoriteDescriptor favoriteDescriptor
+                = new FavoriteDescriptor(getNodeIdentifier(), name, imageUri, description);
+        FavoriteNode result = new FavoriteNode(this, favoriteDescriptor);
+        return result;
     }
 }

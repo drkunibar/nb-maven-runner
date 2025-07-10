@@ -7,11 +7,16 @@ import org.openide.nodes.Node;
 
 import lombok.experimental.UtilityClass;
 
+import io.github.netbeans.mvnrunner.node.FavoriteListNode;
+
 @UtilityClass
 public class NodeUtils {
 
     public static void walkTree(Node node, Consumer<Node> consumer) {
         consumer.accept(node);
+        if (node instanceof FavoriteListNode) {
+            return;
+        }
         Children children = node.getChildren();
         for (Node child : children.getNodes()) {
             walkTree(child, consumer);

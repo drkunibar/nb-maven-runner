@@ -1,6 +1,7 @@
 package io.github.netbeans.mvnrunner.node;
 
 import java.awt.Image;
+import javax.annotation.Nonnull;
 
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
@@ -21,7 +22,7 @@ public class ProjectNode extends AbstractNode {
     private final NbMavenProjectWrapper project;
     private final ProjectInformation projectInformation;
 
-    public ProjectNode(NbMavenProjectWrapper project) {
+    public ProjectNode(@Nonnull NbMavenProjectWrapper project) {
         super(new ProjectChildren(project), Lookups.singleton(project));
         this.project = project;
         MavenProjectWrapper mavenProject = project.getMavenProject();
