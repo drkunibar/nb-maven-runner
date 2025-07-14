@@ -1,7 +1,6 @@
 package io.github.netbeans.mvnrunner.node;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -17,42 +16,51 @@ import io.github.netbeans.mvnrunner.model.NbMavenProjectImplWrapper;
 import io.github.netbeans.mvnrunner.model.NbMavenProjectWrapper;
 
 @Log
-public class ProjectRootChildren extends Children.Keys<NbMavenProjectWrapper> implements PropertyChangeListener {
+public class ProjectRootChildren extends Children.Keys<Object> {
 
     private static final String OPEN_PROJECTS_PROP = "openProjects"; // NOI18N
 
-    public ProjectRootChildren() {
-        this(false);
-    }
+    private FavoriteListNode favoriteListNode;
 
     public ProjectRootChildren(boolean lazy) {
         super(lazy);
         OpenProjects openProjects = OpenProjects.getDefault();
-        openProjects.addPropertyChangeListener(this::propertyChange);
+        openProjects.addPropertyChangeListener(this::onOpenProjectsPropertyChange);
     }
 
     @Override
-    protected Node[] createNodes(NbMavenProjectWrapper key) {
-        return new Node[] { new ProjectNode(key) };
+    protected Node[] createNodes(Object key) {
+        if (key instanceof NbMavenProjectWrapper projectWrapper) {
+            return new Node[] { new ProjectNode(projectWrapper) };
+        } else if (key instanceof FavoriteListNode favListNode) {
+            return new Node[] { favListNode };
+        } else {
+            return new Node[0];
+        }
     }
 
     @Override
     protected void addNotify() {
         super.addNotify();
+        Collection keys = new ArrayList<>();
+        if (favoriteListNode == null) {
+            this.favoriteListNode = new FavoriteListNode(this.getNode());
+        } else {
+            favoriteListNode.addNotify();
+        }
+        keys.add(favoriteListNode);
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-        Collection<NbMavenProjectWrapper> result = new ArrayList<>();
         for (Project p : openProjects) {
             if (p != null && NbMavenProjectImplWrapper.isNbMavenProjectImpl(p)) {
                 NbMavenProjectImplWrapper projectImplWrapper = NbMavenProjectImplWrapper.getInstance(p);
                 NbMavenProjectWrapper projectWrapper = projectImplWrapper.getNbMavenProjectWrapper();
-                result.add(projectWrapper);
+                keys.add(projectWrapper);
             }
         }
-        setKeys(result.toArray(NbMavenProjectWrapper[]::new));
+        setKeys(keys.toArray(Object[]::new));
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void onOpenProjectsPropertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (Objects.equals(propertyName, OPEN_PROJECTS_PROP)) {
             addNotify();

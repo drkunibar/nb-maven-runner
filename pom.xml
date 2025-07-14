@@ -7,7 +7,7 @@
     <version>1.0.1</version>
   </parent>
   <artifactId>nb-maven-runner</artifactId>
-  <version>1.0.1</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>nbm</packaging>
   <name>Netbeans Module Maven Runner</name>
   <description>A Netbeans Plugin to show Maven projects with action, lifecycle and plugins-goals</description>
@@ -97,12 +97,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.2.1-jre</version>
+      <version>33.4.8-jre</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.13.0</version>
+      <version>3.17.0</version>
     </dependency>
     <!-- Build helper -->
     <dependency>
@@ -114,19 +114,19 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.32</version>
+      <version>1.18.38</version>
       <scope>provided</scope>
     </dependency>
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>1.7.36</version>
+      <version>2.0.17</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
+      <version>2.0.17</version>
     </dependency>
     <!-- Netbeans Implementations (see <moduleDependencies> -->
     <dependency>

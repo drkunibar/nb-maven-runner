@@ -13,6 +13,8 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
+import io.github.netbeans.mvnrunner.action.AddFavoriteAction;
+import io.github.netbeans.mvnrunner.favorite.FavoriteDescriptor;
 import io.github.netbeans.mvnrunner.model.Mojo.Phase;
 import io.github.netbeans.mvnrunner.util.MavenProjectUtils;
 
@@ -24,7 +26,7 @@ import io.github.netbeans.mvnrunner.util.MavenProjectUtils;
     "TT_lifecycle=<html><b>Phase:</b> {0}<br/>\n<b>Goals:</b> {1}</htlm>"
 })
 // @formatter:on
-public class LifecycleNode extends AbstractNode {
+public class LifecycleNode extends AbstractNode implements FavoriteableNode {
 
     private static final @StaticResource String LIFECYCLE_ICON
             = "io/github/netbeans/mvnrunner/resources/thread_running_16.png"; // NOI18N
@@ -53,7 +55,8 @@ public class LifecycleNode extends AbstractNode {
         Action runGoalWithModsAction = MavenProjectUtils.createCustomMavenAction(phase.getName(),
                 MavenProjectUtils.createNetbeansActionMapping(project, phase), true, Lookup.EMPTY, project);
         runGoalWithModsAction.putValue(Action.NAME, ACT_Execute_mod());
-        return new Action[] { runGoalAction, runGoalWithModsAction };
+        Action addFavoriteAction = new AddFavoriteAction(this);
+        return new Action[] { runGoalAction, runGoalWithModsAction, null, addFavoriteAction };
     }
 
     @Override
@@ -62,4 +65,20 @@ public class LifecycleNode extends AbstractNode {
                 MavenProjectUtils.createNetbeansActionMapping(project, phase), false, Lookup.EMPTY, project);
     }
 
+    @Override
+    public String getNodeIdentifier() {
+        return new StringBuilder().append("LifecycleNode_")
+                .append(project.getProjectDirectory().getPath())
+                .append("_")
+                .append(getName())
+                .toString();
+    }
+
+    @Override
+    public FavoriteNode getFavoriteNode(String name, String imageUri, String description) {
+        FavoriteDescriptor favoriteDescriptor
+                = new FavoriteDescriptor(getNodeIdentifier(), name, imageUri, description);
+        FavoriteNode result = new FavoriteNode(this, favoriteDescriptor);
+        return result;
+    }
 }

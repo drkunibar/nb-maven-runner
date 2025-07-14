@@ -19,6 +19,12 @@ The toolbar shows following buttons:
 * **Expand all:** Expands all nodes in the Maven Runner
 * **Collapse all:** Collapse all nodes in the Maven Runner
 
+## Favorites
+
+You add actions, goals etc. to the 'Favorites' node.
+
+![Maven Runner Favorites](doc/maven.runner-favorites.png)
+
 ## Profiles
 
 This node contains all declared profiles (pom.xml, settings.xml and configurations). 
@@ -66,6 +72,14 @@ which shows the documentation of the plugin goal in the *Output* panel.
 ![Maven Runner Documentation Output](doc/maven-runner-goal-help-output.png)
 
 # Changelog
+
+## 1.2.0
+- Fix 'restore' view
+- Add feature to use 'favorites'
+
+## 1.1.0
+- 'Real' project icons
+- Update external libs
 
 ## 1.0.0
 

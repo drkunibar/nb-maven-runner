@@ -46,6 +46,24 @@ public class NetbeansActionMappingWrapper {
     }
 
     @SneakyThrows
+    public String getActionName() {
+        Method method = MethodUtils.getAccessibleMethod(getUnwrapClass(), "getActionName");
+        return (String) method.invoke(unwrap());
+    }
+
+    @SneakyThrows
+    public List<String> getGoals() {
+        Method method = MethodUtils.getAccessibleMethod(getUnwrapClass(), "getGoals");
+        return (List<String>) method.invoke(unwrap());
+    }
+
+    @SneakyThrows
+    public Map<String, String> getProperties() {
+        Method method = MethodUtils.getAccessibleMethod(getUnwrapClass(), "getProperties");
+        return (Map<String, String>) method.invoke(unwrap());
+    }
+
+    @SneakyThrows
     public void addProperty(String key, String value) {
         Method method = MethodUtils.getAccessibleMethod(getUnwrapClass(), "addProperty", String.class, String.class);
         method.invoke(unwrap(), key, value);

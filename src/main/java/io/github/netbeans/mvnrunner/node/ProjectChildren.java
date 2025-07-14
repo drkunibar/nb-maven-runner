@@ -2,6 +2,7 @@ package io.github.netbeans.mvnrunner.node;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.annotation.Nonnull;
 
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
@@ -26,7 +27,8 @@ public class ProjectChildren extends Children.Keys<ProjectChildren.NodeTypes> im
 
     private final NbMavenProjectWrapper project;
 
-    public ProjectChildren(NbMavenProjectWrapper project) {
+    public ProjectChildren(@Nonnull NbMavenProjectWrapper project) {
+        super(false);
         this.project = project;
         project.addPropertyChangeListener(this::propertyChange);
     }
