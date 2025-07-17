@@ -73,6 +73,9 @@ which shows the documentation of the plugin goal in the *Output* panel.
 
 # Changelog
 
+## 1.2.1
+- Downgrade slf4j to 1.7.36
+
 ## 1.2.0
 - Fix 'restore' view
 - Add feature to use 'favorites'
