@@ -17,7 +17,7 @@ class Wrapper {
 
     private final Object wrappedObject;
 
-    protected Wrapper(Object wrappedObject) {
+    protected Wrapper(@Nonnull Object wrappedObject) {
         this.wrappedObject = wrappedObject;
     }
 
