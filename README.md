@@ -1,4 +1,4 @@
-# Netbeans Maven Runner
+# NetBeans Maven Runner
 
 This plugin is inspired by the IntelliJ IDEA Maven side panel.
 
@@ -36,7 +36,7 @@ The currently active profiles are marked with a selected checkbox.
 
 The *Actions* node contains the IDEs default actions *Run*, *Debug*, *Build*, 
 *Clean and Build*, all the actions you have declared in the project and the 
-action have defined in the Netbeans Maven options. You can run any action by 
+action have defined in the NetBeans Maven options. You can run any action by
 double click.
 
 ![Maven Runner Actions](doc/maven-runner-actions.png)

@@ -79,7 +79,7 @@ public class MavenProjectUtils {
         return plugins.stream().flatMap(plugin -> getGoals(plugin, mavenProject).stream()).collect(Collectors.toSet());
     }
 
-    // Inspired by Netbeans org.netbeans.modules.maven.execute.navigator.GoaPanel
+    // Inspired by NetBeans org.netbeans.modules.maven.execute.navigator.GoalPanel
     @SneakyThrows
     @SuppressWarnings("UseSpecificCatch")
     public static Set<Mojo> getGoals(ArtifactWrapper artifact, MavenProjectWrapper mavenProject) {

@@ -13,7 +13,7 @@ import lombok.Setter;
 import lombok.Value;
 
 @Value
-// Inspired by Netbeans org.netbeans.modules.maven.execute.navigator.GoaPanel
+// Inspired by NetBeans org.netbeans.modules.maven.execute.navigator.GoaPanel
 public class Mojo implements Comparable<Mojo> {
 
     // @formatter:off
